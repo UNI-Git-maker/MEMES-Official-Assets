@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171717">
+  <title>UNI Gallery</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080912;
+      --panel: rgba(8, 9, 18, 0.72);
+      --panel-strong: rgba(19, 24, 44, 0.9);
+      --text: #f7f8ff;
+      --muted: #b8bfd7;
+      --line: rgba(255, 255, 255, 0.16);
+      --pink: #ff5fb7;
+      --cyan: #62dcff;
+      --lime: #bcff69;
+      --accent: #62dcff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      letter-spacing: 0;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -4;
+      content: "";
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        radial-gradient(circle at 16% 8%, rgba(255, 95, 183, 0.2), transparent 28rem),
+        radial-gradient(circle at 82% 12%, rgba(98, 220, 255, 0.15), transparent 32rem),
+        linear-gradient(180deg, #080912 0%, #111529 45%, #090b16 100%);
+      background-size: 56px 56px, 56px 56px, auto, auto, auto;
+    }
+
+    body::after {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      content: "";
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.42), transparent 28%, transparent 72%, rgba(0, 0, 0, 0.42)),
+        linear-gradient(180deg, rgba(8, 9, 18, 0.12), rgba(8, 9, 18, 0.62));
+    }
+
+    .site-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .beam,
+    .timeline-line {
+      position: absolute;
+      display: block;
+    }
+
+    .beam {
+      width: 34vw;
+      height: 34vw;
+      min-width: 320px;
+      min-height: 320px;
+      filter: blur(30px);
+      opacity: 0.48;
+      transform: rotate(-16deg);
+    }
+
+    .beam-a {
+      top: -11vw;
+      left: -7vw;
+      background: radial-gradient(circle, rgba(255, 95, 183, 0.42), transparent 68%);
+    }
+
+    .beam-b {
+      top: 12vh;
+      right: -10vw;
+      background: radial-gradient(circle, rgba(98, 220, 255, 0.34), transparent 68%);
+    }
+
+    .beam-c {
+      left: 22vw;
+      bottom: -16vw;
+      background: radial-gradient(circle, rgba(188, 255, 105, 0.18), transparent 72%);
+    }
+
+    .timeline-line {
+      width: 2px;
+      height: 140vh;
+      background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+      animation: drift 12s linear infinite;
+    }
+
+    .line-a { left: 18%; animation-delay: -4s; }
+    .line-b { left: 48%; animation-delay: -9s; }
+    .line-c { left: 78%; animation-delay: -2s; }
+
+    @keyframes drift {
+      from { transform: translateY(-40vh) rotate(18deg); }
+      to { transform: translateY(40vh) rotate(18deg); }
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 520px);
+      min-height: 128svh;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+      display: grid;
+      grid-template-rows: auto minmax(620px, 1fr) auto;
+      gap: 16px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      padding: 8px 2px 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 13vw, 4.2rem);
+      line-height: 0.92;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .count {
+      min-width: 4.5rem;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(8, 9, 18, 0.58);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      font-size: 0.8rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    main {
+      display: grid;
+      align-content: center;
+      min-height: 0;
+    }
+
+    .gallery {
+      position: relative;
+      min-height: min(70vh, 740px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(255, 95, 183, 0.1), transparent 26rem),
+        radial-gradient(circle at 88% 14%, rgba(98, 220, 255, 0.1), transparent 24rem),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
+        rgba(8, 9, 18, 0.72);
+      box-shadow:
+        0 28px 80px rgba(0, 0, 0, 0.48),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .track {
+      height: min(70vh, 740px);
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+    }
+
+    .track::-webkit-scrollbar {
+      display: none;
+    }
+
+    .slide {
+      position: relative;
+      flex: 0 0 100%;
+      height: 100%;
+      scroll-snap-align: center;
+      display: grid;
+      place-items: center;
+      padding: 14px;
+      margin: 0;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 34px rgba(0, 0, 0, 0.42));
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .nav {
+      position: absolute;
+      inset: auto 12px 12px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    button {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text);
+      background: rgba(8, 12, 18, 0.74);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      font-size: 1.35rem;
+      line-height: 1;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    button:active {
+      transform: scale(0.96);
+    }
+
+    .status {
+      min-height: 1.4rem;
+      color: var(--muted);
+      font-size: 0.86rem;
+      text-align: center;
+    }
+
+    .dots {
+      min-height: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--panel-strong);
+    }
+
+    .dot.is-active {
+      width: 18px;
+      background: var(--accent);
+    }
+
+    .empty {
+      min-height: min(70vh, 740px);
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    footer {
+      display: flex;
+      justify-content: center;
+      padding-bottom: env(safe-area-inset-bottom);
+      color: rgba(247, 243, 234, 0.52);
+      font-size: 0.78rem;
+    }
+
+    @media (min-width: 720px) {
+      .page {
+        padding-top: 32px;
+        min-height: 118vh;
+      }
+
+      .gallery,
+      .track,
+      .empty {
+        min-height: 760px;
+        height: 760px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="site-bg" aria-hidden="true">
+    <span class="beam beam-a"></span>
+    <span class="beam beam-b"></span>
+    <span class="beam beam-c"></span>
+    <span class="timeline-line line-a"></span>
+    <span class="timeline-line line-b"></span>
+    <span class="timeline-line line-c"></span>
+  </div>
+
+  <div class="page">
+    <header>
+      <h1>UNI</h1>
+      <div class="count" id="count">0 / 0</div>
+    </header>
+
+    <main>
+      <section class="gallery" aria-label="UNI image gallery">
+        <div class="track" id="track" tabindex="0"></div>
+        <div class="nav" aria-label="Gallery controls">
+          <button type="button" id="prev" aria-label="前の画像">&lsaquo;</button>
+          <button type="button" id="next" aria-label="次の画像">&rsaquo;</button>
+        </div>
+      </section>
+    </main>
+
+    <div>
+      <div class="status" id="status">Loading images...</div>
+      <div class="dots" id="dots" aria-hidden="true"></div>
+    </div>
+
+    <footer>&copy; みー娘</footer>
+  </div>
+
+  <script>
+    const repo = 'UNI-Git-maker/MEMES-Official-Assets';
+    const imageDir = 'characters/UNI';
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/${imageDir}`;
+    const imagePattern = /\.(png|jpe?g|webp|gif)$/i;
+
+    const track = document.getElementById('track');
+    const dots = document.getElementById('dots');
+    const status = document.getElementById('status');
+    const count = document.getElementById('count');
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    let images = [];
+    let currentIndex = 0;
+
+    function setStatus(message) {
+      status.textContent = message || '';
+    }
+
+    function updateUi(index) {
+      currentIndex = Math.max(0, Math.min(index, images.length - 1));
+      count.textContent = images.length ? `${currentIndex + 1} / ${images.length}` : '0 / 0';
+      [...dots.children].forEach((dot, dotIndex) => {
+        dot.classList.toggle('is-active', dotIndex === currentIndex);
+      });
+    }
+
+    function goTo(index) {
+      if (!images.length) return;
+      const safeIndex = (index + images.length) % images.length;
+      const slide = track.children[safeIndex];
+      slide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      updateUi(safeIndex);
+    }
+
+    function renderGallery(items) {
+      images = items
+        .filter((item) => item.type === 'file' && imagePattern.test(item.name))
+        .sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+
+      if (!images.length) {
+        track.innerHTML = '<div class="empty">characters/UNI に画像を追加すると、ここに表示されます。</div>';
+        setStatus('No images found');
+        updateUi(0);
+        return;
+      }
+
+      track.innerHTML = images.map((image, index) => `
+        <figure class="slide" aria-label="${index + 1} / ${images.length}">
+          <img src="${image.download_url}" alt="UNI image ${index + 1}" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async">
+        </figure>
+      `).join('');
+
+      dots.innerHTML = images.map(() => '<span class="dot"></span>').join('');
+      setStatus('Swipe to browse');
+      updateUi(0);
+    }
+
+    async function loadImages() {
+      try {
+        const response = await fetch(apiUrl, { headers: { Accept: 'application/vnd.github+json' } });
+        if (!response.ok) throw new Error(`GitHub API responded ${response.status}`);
+        renderGallery(await response.json());
+      } catch (error) {
+        track.innerHTML = '<div class="empty">画像を読み込めませんでした。時間をおいて再度アクセスしてください。</div>';
+        setStatus(error.message);
+      }
+    }
+
+    prev.addEventListener('click', () => goTo(currentIndex - 1));
+    next.addEventListener('click', () => goTo(currentIndex + 1));
+
+    track.addEventListener('scroll', () => {
+      if (!images.length) return;
+      const index = Math.round(track.scrollLeft / track.clientWidth);
+      updateUi(index);
+    }, { passive: true });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') goTo(currentIndex - 1);
+      if (event.key === 'ArrowRight') goTo(currentIndex + 1);
+    });
+
+    loadImages();
+  </script>
+</body>
+</html>
